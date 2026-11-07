@@ -2,6 +2,8 @@
 
 [Obsidian](https://obsidian.md) plugin that manages blocks of tasks/todos that stays very organized.
 
+![Task Block in live preview](./task-block.png)
+
 
 ## Features
 
