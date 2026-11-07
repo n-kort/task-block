@@ -1,0 +1,83 @@
+.task-block-date {
+	color: var(--text-faint);
+	user-select: none;
+}
+
+.task-block-date-editable {
+	cursor: pointer;
+	border-radius: var(--radius-s);
+}
+
+.task-block-date-editable:hover {
+	color: var(--text-muted);
+}
+
+.task-block-add {
+	display: inline-flex;
+	margin-block-end: 1lh;
+	align-items: center;
+	gap: var(--size-2-2);
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+.task-block-section-title {
+	display: inline-block;
+	margin-block-start: 1lh;
+	color: var(--text-faint);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	user-select: none;
+}
+
+li.task-block-section-title {
+	display: list-item;
+	list-style: none;
+}
+
+.task-block-add:hover {
+	color: var(--text-normal);
+}
+
+.task-block-add-icon {
+	display: inline-flex;
+}
+
+.task-block-add-icon svg {
+	width: var(--icon-s);
+	height: var(--icon-s);
+}
+
+.task-block-cancel {
+	display: inline-flex;
+	vertical-align: middle;
+	margin-inline-start: var(--size-4-1);
+	color: var(--text-faint);
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.task-block-cancel:hover {
+	color: var(--color-red);
+	opacity: 1;
+}
+
+.task-block-cancel svg {
+	width: var(--icon-xs);
+	height: var(--icon-xs);
+}
+
+.task-block-line[data-task="-"] .task-list-item-checkbox,
+.task-block-list li[data-task="-"] > .task-list-item-checkbox {
+	--checkbox-color: var(--color-red);
+	--checkbox-color-hover: var(--color-red);
+	background-color: var(--color-red);
+	border-color: var(--color-red);
+}
+
+.task-block-line[data-task="-"] .task-list-item-checkbox:checked::after,
+.task-block-list li[data-task="-"] > .task-list-item-checkbox:checked::after {
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 7l10 10M17 7L7 17'/%3E%3C/svg%3E");
+	mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M7 7l10 10M17 7L7 17'/%3E%3C/svg%3E");
+}
