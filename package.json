@@ -1,6 +1,6 @@
 {
 	"name": "task-block",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Keep tasks in self-sorting blocks with created, completion and cancelled dates.",
 	"main": "main.js",
 	"type": "module",
@@ -8,6 +8,7 @@
 		"dev": "node esbuild.config.mjs",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
+		"postversion": "git push --follow-tags",
 		"lint": "eslint ."
 	},
 	"keywords": [],
