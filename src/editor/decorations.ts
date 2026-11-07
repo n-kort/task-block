@@ -35,7 +35,9 @@ function sectionTitles(
 		const separator = start.line - 1;
 		if (separator < 0 || body[separator]?.trim() !== '') continue;
 		const title =
-			start.status === 'done' ? settings.completedTitle : settings.cancelledTitle;
+			start.status === 'done'
+				? (region.labels.completed ?? settings.completedTitle)
+				: (region.labels.cancelled ?? settings.cancelledTitle);
 		titles.set(region.open + 2 + separator, title);
 	}
 	return titles;
@@ -79,7 +81,7 @@ export function createDecorations(getSettings: () => TaskBlockSettings) {
 					all.add(
 						open.from,
 						open.to,
-						Decoration.replace({ widget: new AddTaskButton(settings.buttonText) }),
+						Decoration.replace({ widget: new AddTaskButton(region.labels.button ?? settings.buttonText) }),
 					);
 				}
 				const titles = sectionTitles(lines, region, settings);

@@ -1,4 +1,5 @@
-const OPEN_MARKER = /^\s*%%\s*tasks\s*%%\s*$/;
+import { Labels, parseOpenMarker } from './marker';
+
 const CLOSE_MARKER = /^\s*%%\s*\/tasks\s*%%\s*$/;
 const TASK_LINE = /^(\s*)[-*+] \[(.)\]/;
 const FRESH_TASK = /^\s*[-*+] \[ \] $/;
@@ -12,6 +13,7 @@ export const EMPTY_TASK_LIST = '%% tasks %%\n\n%% /tasks %%\n';
 export interface Region {
 	open: number;
 	close: number;
+	labels: Labels;
 }
 
 export type TaskStatus = 'open' | 'done' | 'cancelled';
@@ -40,13 +42,14 @@ export interface Field {
 
 export function findRegions(lines: readonly string[]): Region[] {
 	const regions: Region[] = [];
-	let open: number | null = null;
+	let open: { line: number; labels: Labels } | null = null;
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i] ?? '';
-		if (OPEN_MARKER.test(line)) {
-			open = i;
+		const labels = parseOpenMarker(line);
+		if (labels) {
+			open = { line: i, labels };
 		} else if (open !== null && CLOSE_MARKER.test(line)) {
-			regions.push({ open, close: i });
+			regions.push({ open: open.line, close: i, labels: open.labels });
 			open = null;
 		}
 	}

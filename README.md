@@ -1,6 +1,6 @@
 # Task Block
 
-[Obsidian](https://obsidian.md) plugin that manages blocks of tasks/todos that stays very organized.
+[Obsidian](https://obsidian.md) plugin that manages blocks of tasks/todos that stay very organized.
 
 ![Task Block in live preview](./task-block.png)
 
@@ -18,9 +18,11 @@
 ## Usage
 
 - Insert a block with the **Insert task list** command or from the editor context menu
+- Override labels per block in its opening marker: `%% tasks button: Add item completed: Bought cancelled: Skipped %%`. Each is optional
 - Add tasks with the button, the **Add task** command, or Enter on an existing task
 - Change status by ticking the checkbox, from the context menu, or with the **Mark as …** commands
 - Configure it in **Settings → Task Block**: date format, button text, cancel button, section titles
+- Configure per-block labels in the opening `%% tasks %%` tag. For example, `%% tasks button: Add item completed: Bought cancelled: Not needed %%` for a shopping list
 
 ## How it works
 

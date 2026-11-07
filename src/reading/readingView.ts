@@ -6,7 +6,7 @@ import {
 } from 'obsidian';
 import { createDateEl, today } from '../dates';
 import { sortRegions } from '../model/sort';
-import { findFields, isInsideBody } from '../model/tasks';
+import { findFields, Region, regionContaining } from '../model/tasks';
 import { TaskBlockSettings } from '../settings';
 
 function replaceFields(node: Text, format: string): void {
@@ -35,9 +35,17 @@ function renderDates(el: HTMLElement, format: string): void {
 	});
 }
 
-function isTaskList(el: HTMLElement, ctx: MarkdownPostProcessorContext): boolean {
+function taskListRegion(
+	el: HTMLElement,
+	ctx: MarkdownPostProcessorContext,
+): Region | null {
 	const info = ctx.getSectionInfo(el);
-	return !!info && isInsideBody(info.text.split('\n'), info.lineStart);
+	if (!info) return null;
+	const region = regionContaining(info.text.split('\n'), info.lineStart);
+	if (!region || info.lineStart <= region.open || info.lineStart >= region.close) {
+		return null;
+	}
+	return region;
 }
 
 function addSectionTitle(el: HTMLElement, selector: string, title: string): void {
@@ -48,15 +56,23 @@ function addSectionTitle(el: HTMLElement, selector: string, title: string): void
 	first.before(createEl('li', { cls: 'task-block-section-title', text: title }));
 }
 
-function renderTaskList(el: HTMLElement, settings: TaskBlockSettings): void {
+function renderTaskList(
+	el: HTMLElement,
+	region: Region,
+	settings: TaskBlockSettings,
+): void {
 	el.querySelectorAll(':scope > ul').forEach((list) => list.addClass('task-block-list'));
 	if (!settings.showSectionTitles) return;
 	addSectionTitle(
 		el,
 		'li.task-list-item.is-checked:not([data-task="-"])',
-		settings.completedTitle,
+		region.labels.completed ?? settings.completedTitle,
 	);
-	addSectionTitle(el, 'li.task-list-item[data-task="-"]', settings.cancelledTitle);
+	addSectionTitle(
+		el,
+		'li.task-list-item[data-task="-"]',
+		region.labels.cancelled ?? settings.cancelledTitle,
+	);
 }
 
 function isOpenInEditor(plugin: Plugin, file: TFile): boolean {
@@ -88,7 +104,8 @@ export function registerReadingView(
 	plugin.registerMarkdownPostProcessor((el, ctx) => {
 		const settings = getSettings();
 		renderDates(el, settings.dateFormat);
-		if (isTaskList(el, ctx)) renderTaskList(el, settings);
+		const region = taskListRegion(el, ctx);
+		if (region) renderTaskList(el, region, settings);
 	});
 	plugin.registerEvent(
 		plugin.app.vault.on('modify', (file) => {
