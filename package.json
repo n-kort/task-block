@@ -1,7 +1,7 @@
 {
 	"name": "task-block",
 	"version": "1.0.0",
-	"description": "An Obsidian plugin that creates blocks of tasks/todos, which stay very organized",
+	"description": "Keep tasks in self-sorting blocks with created, completion and cancelled dates.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
@@ -22,7 +22,7 @@
 		"eslint-plugin-obsidianmd": "^0.4.0",
 		"globals": "^17.6.0",
 		"jiti": "^2.6.1",
-		"obsidian": "latest",
+		"obsidian": "1.14.4",
 		"typescript": "^5.8.3",
 		"typescript-eslint": "^8.59.1"
 	}

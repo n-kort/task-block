@@ -3,7 +3,7 @@
 	"name": "Task Block",
 	"version": "1.0.0",
 	"minAppVersion": "1.13.0",
-	"description": "A block of tasks/todos that stays very organized",
+	"description": "Keep tasks in self-sorting blocks with created, completion and cancelled dates.",
 	"author": "Nicolas Kort",
 	"authorUrl": "https://n-kort.net",
 	"isDesktopOnly": false

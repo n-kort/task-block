@@ -2,7 +2,6 @@ import { Extension } from '@codemirror/state';
 import { MarkdownView, Plugin } from 'obsidian';
 import { registerCommands } from './commands';
 import { buildEditorExtension } from './editor';
-import { registerMigration } from './migrate';
 import { registerReadingView } from './reading/readingView';
 import {
 	DEFAULT_SETTINGS,
@@ -20,7 +19,6 @@ export default class TaskBlockPlugin extends Plugin {
 		this.registerEditorExtension(this.editorExtensions);
 		registerReadingView(this, this.getSettings);
 		registerCommands(this);
-		registerMigration(this);
 		this.addSettingTab(new TaskBlockSettingTab(this.app, this));
 	}
 

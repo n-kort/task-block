@@ -1,4 +1,9 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import {
+	App,
+	PluginSettingTab,
+	Setting,
+	SettingDefinitionItem,
+} from 'obsidian';
 import type TaskBlockPlugin from './main';
 
 export interface TaskBlockSettings {
@@ -19,6 +24,12 @@ export const DEFAULT_SETTINGS: TaskBlockSettings = {
 	cancelledTitle: 'Cancelled',
 };
 
+type TextKey = 'buttonText' | 'completedTitle' | 'cancelledTitle';
+
+function isSettingKey(key: string): key is keyof TaskBlockSettings {
+	return key in DEFAULT_SETTINGS;
+}
+
 export class TaskBlockSettingTab extends PluginSettingTab {
 	constructor(
 		app: App,
@@ -27,10 +38,67 @@ export class TaskBlockSettingTab extends PluginSettingTab {
 		super(app, plugin);
 	}
 
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		const titlesHidden = () => !this.plugin.settings.showSectionTitles;
+		return [
+			{
+				name: 'Date format',
+				desc: 'How dates are shown after each task. Uses Moment.js syntax.',
+				aliases: ['moment'],
+				render: (setting) => this.renderDateFormat(setting),
+			},
+			this.textDefinition(
+				'Button text',
+				'Text on the button that adds a new task.',
+				'buttonText',
+			),
+			{
+				name: 'Show cancel button',
+				desc: 'Show a button after open tasks that moves them to the cancelled section.',
+				control: { type: 'toggle', key: 'showCancelButton' },
+			},
+			{
+				name: 'Show section titles',
+				desc: 'Show a faded title above the completed and cancelled tasks.',
+				control: { type: 'toggle', key: 'showSectionTitles' },
+			},
+			this.textDefinition('Completed title', undefined, 'completedTitle', titlesHidden),
+			this.textDefinition('Cancelled title', undefined, 'cancelledTitle', titlesHidden),
+		];
+	}
 
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (!isSettingKey(key)) return;
+		const settings = this.plugin.settings as unknown as Record<string, unknown>;
+		const fallback = DEFAULT_SETTINGS[key];
+		settings[key] =
+			typeof value === 'string' && typeof fallback === 'string'
+				? value.trim() || fallback
+				: value;
+		await this.plugin.saveSettings();
+		this.plugin.refreshViews();
+		if (key === 'showSectionTitles') this.refreshDomState();
+	}
+
+	private textDefinition(
+		name: string,
+		desc: string | undefined,
+		key: TextKey,
+		disabled?: () => boolean,
+	): SettingDefinitionItem {
+		return {
+			name,
+			desc,
+			control: {
+				type: 'text',
+				key,
+				placeholder: DEFAULT_SETTINGS[key],
+				disabled,
+			},
+		};
+	}
+
+	private renderDateFormat(setting: Setting): void {
 		const description = createFragment((frag) => {
 			frag.appendText('How dates are shown after each task. Uses ');
 			frag.createEl('a', {
@@ -40,87 +108,12 @@ export class TaskBlockSettingTab extends PluginSettingTab {
 			frag.appendText('. Preview: ');
 		});
 		const sample = description.createEl('strong');
-
-		new Setting(containerEl)
-			.setName('Date format')
-			.setDesc(description)
-			.addMomentFormat((format) =>
-				format
-					.setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
-					.setValue(this.plugin.settings.dateFormat)
-					.setSampleEl(sample)
-					.onChange(async (value) => {
-						this.plugin.settings.dateFormat =
-							value.trim() || DEFAULT_SETTINGS.dateFormat;
-						await this.plugin.saveSettings();
-						this.plugin.refreshViews();
-					}),
-			);
-
-		new Setting(containerEl)
-			.setName('Button text')
-			.setDesc('Text on the button that adds a new task.')
-			.addText((text) =>
-				text
-					.setPlaceholder(DEFAULT_SETTINGS.buttonText)
-					.setValue(this.plugin.settings.buttonText)
-					.onChange(async (value) => {
-						this.plugin.settings.buttonText =
-							value.trim() || DEFAULT_SETTINGS.buttonText;
-						await this.plugin.saveSettings();
-						this.plugin.refreshViews();
-					}),
-			);
-
-		new Setting(containerEl)
-			.setName('Show cancel button')
-			.setDesc('Show a button after open tasks that moves them to the cancelled section.')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.showCancelButton)
-					.onChange(async (value) => {
-						this.plugin.settings.showCancelButton = value;
-						await this.plugin.saveSettings();
-						this.plugin.refreshViews();
-					}),
-			);
-
-		const titleSettings: Setting[] = [];
-		new Setting(containerEl)
-			.setName('Show section titles')
-			.setDesc('Show a faded title above the completed and cancelled tasks.')
-			.addToggle((toggle) =>
-				toggle
-					.setValue(this.plugin.settings.showSectionTitles)
-					.onChange(async (value) => {
-						this.plugin.settings.showSectionTitles = value;
-						for (const setting of titleSettings) setting.setDisabled(!value);
-						await this.plugin.saveSettings();
-						this.plugin.refreshViews();
-					}),
-			);
-		titleSettings.push(
-			this.addTitleSetting('Completed title', 'completedTitle'),
-			this.addTitleSetting('Cancelled title', 'cancelledTitle'),
+		setting.setDesc(description).addMomentFormat((format) =>
+			format
+				.setDefaultFormat(DEFAULT_SETTINGS.dateFormat)
+				.setValue(this.plugin.settings.dateFormat)
+				.setSampleEl(sample)
+				.onChange((value) => this.setControlValue('dateFormat', value)),
 		);
-	}
-
-	private addTitleSetting(
-		name: string,
-		key: 'completedTitle' | 'cancelledTitle',
-	): Setting {
-		return new Setting(this.containerEl)
-			.setName(name)
-			.setDisabled(!this.plugin.settings.showSectionTitles)
-			.addText((text) =>
-				text
-					.setPlaceholder(DEFAULT_SETTINGS[key])
-					.setValue(this.plugin.settings[key])
-					.onChange(async (value) => {
-						this.plugin.settings[key] = value.trim() || DEFAULT_SETTINGS[key];
-						await this.plugin.saveSettings();
-						this.plugin.refreshViews();
-					}),
-			);
 	}
 }

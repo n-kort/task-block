@@ -3,8 +3,7 @@ const CLOSE_MARKER = /^\s*%%\s*\/tasks\s*%%\s*$/;
 const TASK_LINE = /^(\s*)[-*+] \[(.)\]/;
 const FRESH_TASK = /^\s*[-*+] \[ \] $/;
 const EMPTY_TASK_TEXT = /^\s*[-*+] \[.\]\s*$/;
-const FIELD = String.raw`\[(created|added|completion|cancelled)::\s*(\d{4}-\d{2}-\d{2})\]`;
-const LEGACY_CREATED = /\[added::/g;
+const FIELD = String.raw`\[(created|completion|cancelled)::\s*(\d{4}-\d{2}-\d{2})\]`;
 const CHECKBOX_PREFIX = /^\s*[-*+] \[.\] /;
 
 export const TASK_PREFIX = '- [ ] ';
@@ -101,7 +100,7 @@ export function findFields(line: string): Field[] {
 	return [...line.matchAll(new RegExp(FIELD, 'g'))].map((m) => {
 		const from = m.index ?? 0;
 		return {
-			key: (m[1] === 'added' ? 'created' : m[1]) as FieldKey,
+			key: m[1] as FieldKey,
 			from,
 			to: from + m[0].length,
 			iso: m[2] ?? '',
@@ -185,12 +184,3 @@ export function moveFieldsToEnd(
 	};
 }
 
-export function migrateLegacyFields(content: string): string {
-	const lines = content.split('\n');
-	for (const region of findRegions(lines)) {
-		for (let i = region.open + 1; i < region.close; i++) {
-			lines[i] = (lines[i] ?? '').replace(LEGACY_CREATED, '[created::');
-		}
-	}
-	return lines.join('\n');
-}
