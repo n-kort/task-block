@@ -1,6 +1,6 @@
 {
 	"name": "task-block",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"description": "Keep tasks in self-sorting blocks with created, completion and cancelled dates.",
 	"main": "main.js",
 	"type": "module",

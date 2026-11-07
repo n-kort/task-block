@@ -1,7 +1,7 @@
 {
 	"id": "task-block",
 	"name": "Task Block",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"minAppVersion": "1.13.0",
 	"description": "Keep tasks in self-sorting blocks with created, completion and cancelled dates.",
 	"author": "Nicolas Kort",
