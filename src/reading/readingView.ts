@@ -5,6 +5,7 @@ import {
 	TFile,
 } from 'obsidian';
 import { createDateEl, today } from '../dates';
+import { MOVE_DELAY_MS } from '../editor/autoSort';
 import { sortRegions } from '../model/sort';
 import { findFields, Region, regionContaining } from '../model/tasks';
 import { TaskBlockSettings } from '../settings';
@@ -49,8 +50,11 @@ function taskListRegion(
 }
 
 function addSectionTitle(el: HTMLElement, selector: string, title: string): void {
-	const first = el.querySelector(`:scope > ul > ${selector}`);
-	if (!first || first.previousElementSibling?.matches('.task-block-section-title')) {
+	const items = Array.from(el.querySelectorAll(`:scope > ul > ${selector}`));
+	const first = items
+		.filter((item) => !item.previousElementSibling?.matches(selector))
+		.pop();
+	if (!first ||first.previousElementSibling?.matches('.task-block-section-title')) {
 		return;
 	}
 	first.before(createEl('li', { cls: 'task-block-section-title', text: title }));
@@ -107,11 +111,20 @@ export function registerReadingView(
 		const region = taskListRegion(el, ctx);
 		if (region) renderTaskList(el, region, settings);
 	});
+	const timers = new Map<string, number>();
+	plugin.register(() => timers.forEach((timer) => window.clearTimeout(timer)));
 	plugin.registerEvent(
 		plugin.app.vault.on('modify', (file) => {
 			if (!(file instanceof TFile) || file.extension !== 'md') return;
 			if (isOpenInEditor(plugin, file)) return;
-			void sortFile(plugin, file);
+			window.clearTimeout(timers.get(file.path));
+			timers.set(
+				file.path,
+				window.setTimeout(() => {
+					timers.delete(file.path);
+					void sortFile(plugin, file);
+				}, MOVE_DELAY_MS),
+			);
 		}),
 	);
 }

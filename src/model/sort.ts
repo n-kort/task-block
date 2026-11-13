@@ -89,10 +89,14 @@ function isJustToggled(blocks: Block[], index: number): boolean {
 	return blocks.some((b, i) => i > index && b.status === 'open');
 }
 
-export function sectionStarts(body: readonly string[]): SectionStart[] {
+export function sectionStarts(
+	body: readonly string[],
+	previousStatus: ReadonlyMap<number, TaskStatus> = new Map(),
+): SectionStart[] {
 	const { blocks } = parseBody(body);
+	const statusOf = (b: Block) => previousStatus.get(b.origin) ?? b.status;
 	return (['done', 'cancelled'] as const).flatMap((status) => {
-		const first = blocks.find((b) => b.status === status);
+		const first = blocks.find((b) => statusOf(b) === status);
 		return first ? [{ status, line: first.origin }] : [];
 	});
 }
@@ -100,13 +104,17 @@ export function sectionStarts(body: readonly string[]): SectionStart[] {
 export function sortBody(
 	body: readonly string[],
 	today: string,
-	movedLine?: number,
+	movedLines: readonly number[] = [],
 ): string[] {
 	const { lead, blocks } = parseBody(body);
-	const moved = blocks.find((b) => b.origin === movedLine);
-	if (moved) {
-		const groups = group(blocks.filter((b) => b !== moved));
-		groups[moved.status].unshift(stamp(moved, today));
+	const moved = blocks.filter((b) => movedLines.includes(b.origin));
+	if (moved.length) {
+		const groups = group(blocks.filter((b) => !moved.includes(b)));
+		for (const status of ['open', 'done', 'cancelled'] as const) {
+			groups[status].unshift(
+				...moved.filter((b) => b.status === status).map((b) => stamp(b, today)),
+			);
+		}
 		return render(lead, groups);
 	}
 
